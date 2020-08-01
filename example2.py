@@ -1,4 +1,5 @@
 #https://pytorch.org/docs/master/notes/ddp.html
+import os
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
@@ -12,6 +13,7 @@ def example(rank, world_size):
     # create local model
     model = nn.Linear(10, 10).to(rank)
     # construct DDP model
+    print(model.weight[0,0])
     ddp_model = DDP(model, device_ids=[rank])
     # define loss function and optimizer
     loss_fn = nn.MSELoss()
@@ -26,6 +28,7 @@ def example(rank, world_size):
     optimizer.step()
 def main():
     world_size = 8
+
     mp.spawn(example,
              args=(world_size,),
              nprocs=world_size,

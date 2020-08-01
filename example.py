@@ -32,7 +32,9 @@ def demo_basic(local_world_size, local_rank):
         + f"world_size = {dist.get_world_size()}, n = {n}, device_ids = {device_ids}"
     )
     model = ToyModel().cuda(device_ids[0])
+    print('Rank %d: %f'%(local_rank, model.net1.weight[0,0]))
     ddp_model = DDP(model, device_ids)
+    print('Rank %d: ddp %f'%(local_rank, ddp_model.module.net1.weight[0,0]))
     loss_fn = nn.MSELoss()
     optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
     optimizer.zero_grad()
