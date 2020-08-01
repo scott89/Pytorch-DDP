@@ -1,4 +1,4 @@
-
+#https://github.com/pytorch/examples/blob/master/distributed/ddp/README.md
 import os
 import tempfile
 import torch
