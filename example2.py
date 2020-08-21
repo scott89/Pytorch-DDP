@@ -34,7 +34,7 @@ def example(rank, world_size):
     model = nn.Linear(10, 10).to(rank)
     # construct DDP model
     print(model.weight[0,0])
-    #torch.cuda.set_device(rank)
+    torch.cuda.set_device(rank)
     ddp_model = DDP(model, device_ids=[rank])
     # define loss function and optimizer
     print('Rank: %d, ddp model: %s'%(rank, str(ddp_model.module.weight[0,0])))
@@ -53,8 +53,8 @@ def example(rank, world_size):
         for i,batch in enumerate(dataloader):
             # forward pass
             ## set non_blocking to be False, otherwise, the programe will hanging
-            data = batch['data'].to(rank)
-            label = batch['label'].to(rank)
+            data = batch['data'].to(rank, non_blocking=True)
+            label = batch['label'].to(rank, non_blocking=True)
             outputs = ddp_model(data)
             #outputs = ddp_model(torch.randn([10, 10]).to(rank, non_blocking=True))
             #label = torch.randn([10, 10]).to(rank, non_blocking=True)
@@ -63,13 +63,13 @@ def example(rank, world_size):
             loss.backward()
             # update parameters
             optimizer.step()
+            if rank == 0:
+                print('batch: %d, loss: %f'%(i, loss.item()))
             if i == 100:
                 if rank <= 100:
                     ckpt = torch.load('model.pth', map_location='cpu')
                     ddp_model.load_state_dict(ckpt)
                 print('In iteration, Rank: %d, ddp model: %s'%(rank, str(ddp_model.module.weight[0,0])))
-        if rank == 0:
-            print('batch: %d, loss: %f'%(i, loss.item()))
 def main():
     os.environ['MASTER_ADDR']='127.0.0.1'
     os.environ['MASTER_PORT']='8888'
