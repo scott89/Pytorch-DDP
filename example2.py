@@ -51,6 +51,7 @@ def example(rank, world_size):
         torch.save(ddp_model.state_dict(), 'model.pth')
     for epoch in range(1):
         for i,batch in enumerate(dataloader):
+            optimizer.zero_grad()
             # forward pass
             ## set non_blocking to be False, otherwise, the programe will hanging
             data = batch['data'].to(rank, non_blocking=True)
